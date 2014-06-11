@@ -52,7 +52,7 @@ all_lags = cbind(cbind(cbind(cbind(cbind(providers_lag0,providers_lag1[,-1]), pr
                        providers_lag4[,-1]), providers_lag5[,-1]) 
 
 # size of optimal network
-n_counties = 2
+n_counties = 10
 # ranks is a dataframe that keeps track of the counties chosen for the optimal network 
 # and the order in which they were chosen
 ranks_dynamic_lag = as.data.frame(1:n_counties)
@@ -87,7 +87,6 @@ par(mfrow=c(3,2))
 predicted_deaths = data.frame(date = ili_flu_seasons[,'date'])
 
 # run regressions with optimized sets of providers for each region and then make histogram/plots of residuals to decide which approach is best to use
-# (approach being using a seasonal variable, no seasonal, or dropping season 3)
 for (i in 2:ncol(ranks_dynamic_lag)){
   # format region name
   region = colnames(ranks_dynamic_lag)[i]
@@ -96,7 +95,7 @@ for (i in 2:ncol(ranks_dynamic_lag)){
   top_providers = paste('total.',ranks_dynamic_lag[,i],sep='')
   # extract the top provider variables
   X = all_lags[,c(top_providers)]
-  # make regression ijnput
+  # make regression input
   reg_opt = cbind(deaths[,region], X)
   colnames(reg_opt)[1] = 'deaths'
   # do the fit
@@ -110,10 +109,13 @@ for (i in 2:ncol(ranks_dynamic_lag)){
   # calculate the predicted deaths
   coefs = as.data.frame(t(coef(summary(fit))[,'Estimate']))
   deaths_pred = reg_opt
+  # set the first column to be the intercept
   deaths_pred[,1] = rep(coefs[1,1],nrow(deaths_pred))
   for (i in 2:ncol(reg_opt)){
+    # multiply each predictor by the coefficient from the regression
     deaths_pred[,i] = reg_opt[,i]*coefs[1,i]
   } 
+  # sum the interecept and the products of the coefficents and the predictor variables to obtain the estimated deaths
   deaths_pred$x = rowSums(deaths_pred)
   predicted_deaths = cbind(predicted_deaths,deaths_pred$x)
 }
