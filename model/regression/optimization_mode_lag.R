@@ -1,3 +1,5 @@
+rm(list=ls())
+
 # optimization_mode_lag
 # This program makes a lagged dataframe of ILI providers based on the mode lag for a region
 # and then selects the optimal providers for that region using forward selection
@@ -68,7 +70,7 @@ providers_lag4 = make_lag_input(provider_data, 4)
 providers_lag5 = make_lag_input(provider_data, 5) 
 
 # desired size of optimal network
-n_counties = 2
+n_counties = 10
 # ranks_mode_lag is a dataframe that keeps track of the counties chosen for the optimal network 
 # and the order in which they were chosen
 ranks_mode_lag = as.data.frame(1:n_counties)
@@ -173,10 +175,13 @@ for (i in 2:ncol(ranks_mode_lag)){
   # calculate the predicted deaths
   coefs = as.data.frame(t(coef(summary(fit))[,'Estimate']))
   deaths_pred = reg_opt
+  # set the first column to be the intercept
   deaths_pred[,1] = rep(coefs[1,1],nrow(deaths_pred))
   for (i in 2:ncol(reg_opt)){
+    # multiply each predictor by the coefficient from the regression
     deaths_pred[,i] = reg_opt[,i]*coefs[1,i]
   } 
+  # sum the interecept and the products of the coefficents and the predictor variables to obtain the estimated deaths
   deaths_pred$x = rowSums(deaths_pred)
   predicted_deaths = cbind(predicted_deaths,deaths_pred$x)
 }

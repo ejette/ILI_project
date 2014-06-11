@@ -1,3 +1,5 @@
+rm(list=ls())
+
 # optimization_dynamic_lag.R builds models using forward selection incorporating a dynamic lag,
 # meaning that the model picks the best provider/lag combination (i.e., providers can be chosen multiple 
 # times with different lags in the same model)
